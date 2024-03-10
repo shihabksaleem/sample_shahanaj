@@ -1,4 +1,4 @@
-
+import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:my_airport/webservices/webservices.dart';
@@ -17,6 +17,7 @@ class AirportDataScreen extends StatefulWidget {
 class _AirportDataScreenState extends State<AirportDataScreen> {
   late AirportData _airportController;
   bool _isLoading = true;
+  List<Airports> airporstsList = [];
 
   @override
   void initState() {
@@ -27,8 +28,14 @@ class _AirportDataScreenState extends State<AirportDataScreen> {
 
   Future<void> _fetchData() async {
     try {
-      List<Airport>? data = await WebServices().fetchData();
-      _airportController.setAirportData(data!);
+      var data = await WebServices().fetchData();
+
+      if (data != null) {
+        ApiResModel resModel = ApiResModel.fromJson(data);
+        airporstsList = resModel.airportsList ?? [];
+        print(airporstsList.length);
+      }
+      // _airportController.setAirportData(data!);
       setState(() {
         _isLoading = false;
       });
@@ -96,18 +103,18 @@ class _AirportDataScreenState extends State<AirportDataScreen> {
                   child: Consumer<AirportData>(
                     builder: (context, airportData, _) {
                       return ListView.separated(
-                        itemCount: airportData.airportData.length,
+                        itemCount: airporstsList.length,
                         separatorBuilder: (context, index) {
                           return const Divider(
                             thickness: 2,
                           );
                         },
                         itemBuilder: (context, index) {
-                          final airport = airportData.airportData[index];
+                          // final airport = airportData.airportData[index];
                           //log(airportData.toString());
                           return ListTile(
                             leading: Text(
-                              airport.source.code,
+                              airporstsList[index].source?.code ?? "",
                               style: const TextStyle(
                                 color: Colors.black,
                                 fontWeight: FontWeight.bold,
@@ -115,7 +122,7 @@ class _AirportDataScreenState extends State<AirportDataScreen> {
                               ),
                             ),
                             title: Text(
-                              '${airport.source.city} - ${airport.source.countryname}',
+                              '${airporstsList[index].source?.city} - ${airporstsList[index].source?.countryname}',
                             ),
                           );
                         },
